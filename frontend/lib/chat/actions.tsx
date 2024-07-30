@@ -204,32 +204,28 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
 
 
 async function submitUserMessage(content: string) {
-  'use server'
+  'use server';
 
-  const aiState = getMutableAIState<typeof AI>()
+  const aiState = getMutableAIState<typeof AI>();
 
   // 更新用户消息
+  const userMessageId = nanoid();
   aiState.update({
     ...aiState.get(),
     messages: [
       ...aiState.get().messages,
       {
-        id: nanoid(),
+        id: userMessageId,
         role: 'user',
         content
       }
     ]
-  })
-
-  let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
-  let textNode: undefined | React.ReactNode
+  });
 
   // 获取完整的消息历史记录，包括最新的用户消息
-  const allMessages = [
-    ...aiState.get().messages
-  ];
+  const allMessages = [...aiState.get().messages];
 
-  // 格式化消息，以匹配API期望的格式
+  // 格式化消息，以匹配 API 期望的格式
   const formattedMessages = allMessages.map((message) => ({
     content: message.content,
     type: message.role === 'user' ? 'human' : 'ai',
@@ -243,45 +239,157 @@ async function submitUserMessage(content: string) {
     })),
     input: content,
   };
+  const textStream = createStreamableValue('')
+  const spinnerStream = createStreamableUI(<SpinnerMessage />)
+  const messageStream = createStreamableUI(null)
+  const uiStream = createStreamableUI();
 
-  // 调用你自己的 API
-  const response = await fetch('http://localhost:8000/ask', {
+  (async () =>{
+      // 调用流式 API
+  const response = await fetch('http://localhost:8000/chat_stream', {
     method: 'POST',
     headers: {
-      'accept': 'application/json',
+      'accept': 'text/event-stream',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(requestData)
   });
 
-  const result = await response.json();
+  if (!response.body) {
+    // 处理 `response.body` 为 null 的情况
+    throw new Error('Failed to receive stream data');
+  }
 
-  // 模拟流式输出
-  textStream = createStreamableValue('')
-  textNode = <BotMessage content={textStream.value} />
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
 
-  textStream.update(result.answer)
-  textStream.done()
+  let currentContent = ""; // 存储当前消息内容
+  spinnerStream.done(null)
 
-  aiState.done({
-    ...aiState.get(),
-    messages: [
-      ...aiState.get().messages,
-      {
-        id: nanoid(),
-        role: 'assistant',
-        content: result.answer
+  // 读取流并更新消息内容
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    const lines = chunk.split('\n');
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = JSON.parse(line.substring(6));
+        if (data.code === '200' && data.msg === 'ok') {
+          const answer = data.data;
+          currentContent += answer;
+          messageStream.update(<BotMessage content={currentContent} />);
+
+          aiState.update({
+            ...aiState.get(),
+            messages: [
+              ...aiState.get().messages,
+              {
+                id: nanoid(),     
+                role: 'assistant',
+                content: currentContent
+              }
+            ]
+          });
+
+          // 更新消息内容
+
+        }
       }
-    ]
-  })
+    }
+  }
+
+  messageStream.done();
+  uiStream.done();
+  textStream.done();
+  })()
 
   return {
     id: nanoid(),
-    display: textNode
-  }
+    attachments: uiStream.value,
+    spinner: spinnerStream.value,
+    display: messageStream.value
+  };
 }
 
+// async function submitUserMessage(content: string) {
+//   'use server'
 
+//   const aiState = getMutableAIState<typeof AI>()
+
+//   // 更新用户消息
+//   aiState.update({
+//     ...aiState.get(),
+//     messages: [
+//       ...aiState.get().messages,
+//       {
+//         id: nanoid(),
+//         role: 'user',
+//         content
+//       }
+//     ]
+//   })
+
+//   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
+//   let textNode: undefined | React.ReactNode
+
+//   // 获取完整的消息历史记录，包括最新的用户消息
+//   const allMessages = [
+//     ...aiState.get().messages
+//   ];
+
+//   // 格式化消息，以匹配API期望的格式
+//   const formattedMessages = allMessages.map((message) => ({
+//     content: message.content,
+//     type: message.role === 'user' ? 'human' : 'ai',
+//   }));
+
+//   // 构造请求数据
+//   const requestData = {
+//     chat_history: formattedMessages.map((message) => ({
+//       type: message.type,
+//       content: message.content,
+//     })),
+//     input: content,
+//   };
+
+//   // 调用你自己的 API
+//   const response = await fetch('http://localhost:8000/ask', {
+//     method: 'POST',
+//     headers: {
+//       'accept': 'application/json',
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify(requestData)
+//   });
+
+//   const result = await response.json();
+
+//   // 模拟流式输出
+//   textStream = createStreamableValue('')
+//   textNode = <BotMessage content={textStream.value} />
+
+//   textStream.update(result.answer)
+//   textStream.done()
+
+//   aiState.done({
+//     ...aiState.get(),
+//     messages: [
+//       ...aiState.get().messages,
+//       {
+//         id: nanoid(),
+//         role: 'assistant',
+//         content: result.answer
+//       }
+//     ]
+//   })
+
+//   return {
+//     id: nanoid(),
+//     display: textNode
+//   }
+// }
 
 
 export type AIState = {
