@@ -16,5 +16,7 @@ export default async function ChatHomePage() {
     <AI initialAIState={{ chatId: id, messages: [] }}>
       <Chat id={id} session={session} />
     </AI>
+    
+
   )
 }

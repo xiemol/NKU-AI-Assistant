@@ -103,7 +103,8 @@ export function PromptForm({
         }
         }}
       />
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-12 sm:rounded-full sm:px-12">
+      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-[#2f2f2f] px-12 sm:rounded-full sm:px-12">
+
         {/* <Tooltip>
           <TooltipTrigger asChild> */}
         <Button
@@ -121,20 +122,23 @@ export function PromptForm({
           <TooltipContent>Add Attachments</TooltipContent>
         </Tooltip> */}
         <Textarea
-          ref={inputRef}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          placeholder="Send a message."
-          className="min-h-[60px] w-full bg-transparent placeholder:text-zinc-900 resize-none px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-          autoFocus
-          spellCheck={false}
-          autoComplete="off"
-          autoCorrect="off"
-          name="message"
-          rows={1}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-        />
+  ref={inputRef}
+  tabIndex={0}
+  onKeyDown={onKeyDown}
+  placeholder="Send a message."
+  className="min-h-[60px] w-full bg-transparent placeholder:text-white resize-none px-4 py-[1.3rem] focus-within:outline-none sm:text-sm text-white"
+  autoFocus
+  spellCheck={false}
+  autoComplete="off"
+  autoCorrect="off"
+  name="message"
+  rows={1}
+  value={input}
+  onChange={e => setInput(e.target.value)}
+/>
+
+
+
         <div className="absolute right-4 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>

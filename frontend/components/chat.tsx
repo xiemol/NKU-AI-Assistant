@@ -18,7 +18,7 @@ export interface ChatProps extends React.ComponentProps<'div'> {
   session?: Session
 }
 
-export function Chat({ id, className, session }: ChatProps) {
+export function Chat({ id, className, session, }: ChatProps) {
   const router = useRouter()
   const path = usePathname()
   const [input, setInput] = useState('')
@@ -46,32 +46,33 @@ export function Chat({ id, className, session }: ChatProps) {
     setNewChatId(id)
   })
 
+
   const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
     useScrollAnchor()
 
-  return (
-    <div
-      className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
-      ref={scrollRef}
-    >
+    return (
       <div
-        className={cn('pb-[200px] pt-4 md:pt-10', className)}
-        ref={messagesRef}
+        className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
+        ref={scrollRef}
       >
-        {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
-        ) : (
-          <EmptyScreen />
-        )}
-        <div className="w-full h-px" ref={visibilityRef} />
+        <div
+          className={cn('pb-[200px] pt-4 md:pt-10', className)}
+          ref={messagesRef}
+        >
+          {messages.length ? (
+            <ChatList messages={messages} isShared={false} session={session} />
+          ) : (
+            <EmptyScreen />
+          )}
+          <div className="w-full h-px" ref={visibilityRef} />
+        </div>
+        <ChatPanel
+          id={id}
+          input={input}
+          setInput={setInput}
+          isAtBottom={isAtBottom}
+          scrollToBottom={scrollToBottom}
+        />
       </div>
-      <ChatPanel
-        id={id}
-        input={input}
-        setInput={setInput}
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-      />
-    </div>
-  )
-}
+    )
+  }
