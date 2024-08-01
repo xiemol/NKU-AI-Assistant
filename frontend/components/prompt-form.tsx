@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
-import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function PromptForm({
   input,
@@ -25,10 +25,9 @@ export function PromptForm({
   input: string
   setInput: (value: string) => void
 }) {
-  const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const { submitUserMessage } = useActions()
+  const { submitUserMessage, describeImage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
   React.useEffect(() => {
@@ -36,6 +35,8 @@ export function PromptForm({
       inputRef.current.focus()
     }
   }, [])
+
+  const fileRef = React.useRef<HTMLInputElement>(null)
 
   return (
     <form
@@ -61,40 +62,70 @@ export function PromptForm({
           }
         ])
 
-        // Submit and get response message
-        const responseMessage = await submitUserMessage(value)
-        setMessages(currentMessages => [...currentMessages, responseMessage])
-        
-                          // 打印输出responseMessage类型
-                          console.log(responseMessage)
-                          console.log("hello")
-        
-
+        try {
+          // Submit and get response message
+          const responseMessage = await submitUserMessage(value)
+          setMessages(currentMessages => [...currentMessages, responseMessage])
+        } catch {
+          toast(
+            <div className="text-red-600">
+              You have reached your message limit! Please try again later, or{' '}
+              <a
+                className="underline"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://vercel.com/templates/next.js/gemini-ai-chatbot"
+              >
+                deploy your own version
+              </a>
+              .
+            </div>
+          )
+        }
       }}
     >
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
-              onClick={() => {
-                router.push('/new')
-              }}
-            >
-              <IconPlus />
-              <span className="sr-only">New Chat</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
+      <input
+        type="file"
+        className="hidden"
+        id="file"
+        ref={fileRef}
+        onChange={async event => {
+          if (!event.target.files) {
+            toast.error('No file selected')
+            return
+          }
+
+          const file = event.target.files[0]
+
+          if (file) {
+            const responseMessage = await submitUserMessage("发送了文件")
+            setMessages(currentMessages => [...currentMessages, responseMessage])
+        }
+        }}
+      />
+      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-12 sm:rounded-full sm:px-12">
+        {/* <Tooltip>
+          <TooltipTrigger asChild> */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute left-4 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
+          onClick={() => {
+            fileRef.current?.click()
+          }}
+        >
+          <IconPlus />
+          <span className="sr-only">New Chat</span>
+        </Button>
+        {/* </TooltipTrigger>
+          <TooltipContent>Add Attachments</TooltipContent>
+        </Tooltip> */}
         <Textarea
           ref={inputRef}
           tabIndex={0}
           onKeyDown={onKeyDown}
           placeholder="Send a message."
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+          className="min-h-[60px] w-full bg-transparent placeholder:text-zinc-900 resize-none px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
           autoFocus
           spellCheck={false}
           autoComplete="off"
@@ -104,10 +135,15 @@ export function PromptForm({
           value={input}
           onChange={e => setInput(e.target.value)}
         />
-        <div className="absolute right-0 top-[13px] sm:right-4">
+        <div className="absolute right-4 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={input === ''}>
+              <Button
+                type="submit"
+                size="icon"
+                disabled={input === ''}
+                className="bg-transparent shadow-none text-zinc-950 rounded-full hover:bg-zinc-200"
+              >
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
               </Button>

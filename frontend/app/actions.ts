@@ -36,7 +36,6 @@ export async function getChat(id: string, userId: string) {
   if (!chat || (userId && chat.userId !== userId)) {
     return null
   }
-
   return chat
 }
 
@@ -76,7 +75,7 @@ export async function clearChats() {
 
   const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
   if (!chats.length) {
-    return redirect('/')
+    return redirect('/chat')
   }
   const pipeline = kv.pipeline()
 
@@ -88,7 +87,7 @@ export async function clearChats() {
   await pipeline.exec()
 
   revalidatePath('/')
-  return redirect('/')
+  return redirect('/chat')
 }
 
 export async function getSharedChat(id: string) {
@@ -148,9 +147,3 @@ export async function refreshHistory(path: string) {
   redirect(path)
 }
 
-export async function getMissingKeys() {
-  const keysRequired = ['OPENAI_API_KEY']
-  return keysRequired
-    .map(key => (process.env[key] ? '' : key))
-    .filter(key => key !== '')
-}
