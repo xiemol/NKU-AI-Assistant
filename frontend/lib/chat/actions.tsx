@@ -133,6 +133,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
   let requestData
   let specialcontent = null;
   if (selectedValue === "File parser" && content.startsWith('发送了文件') && file) {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
@@ -179,6 +180,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
 
   }
   else if (content.startsWith('发送了文件') && file) {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
@@ -242,6 +244,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
     };
   }
   else if (content.startsWith("请你显示")) {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
@@ -295,6 +298,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
     };
   }
   else if ((content.includes('提供') || content.includes('显示')) && (content.includes('最新') || content.includes('最近'))) {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
@@ -360,6 +364,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
     };
   }
   else if (content === '你可以帮我翻译英文文献吗？') {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
@@ -401,6 +406,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
 
   }
   else if (selectedValue === "Video parser" && content.startsWith('https://www')) {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
@@ -463,6 +469,7 @@ async function submitUserMessage(content: string, selectedValue: string, file?: 
 
   }
   else if (selectedValue === "Web parser" && content.startsWith('https')) {
+    await sleep(2000)
     const spinnerStream = createStreamableUI(<SpinnerMessage />);
     const messageStream = createStreamableUI(null);
     const textStream = createStreamableValue('');
