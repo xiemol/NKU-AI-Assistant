@@ -20,3 +20,4 @@
 ## 安装部署流程
 ### 1、进入frontend文件夹安装依赖：pnpm install 随后启动 pnpm dev
 ### 2、去huggingface官网下载m3e-base-huggingface放于\backend\models\m3e-base-huggingface,随后运行serve.py即可
+ 
